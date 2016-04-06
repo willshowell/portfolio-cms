@@ -22,6 +22,7 @@ $ npm start
 * [ ] Implement authentication
 * [ ] Create front-end management tool
 * [ ] Add image upload feature
+* [ ] Extend functionality for markdown blog posts
  
 
 ### API Design
