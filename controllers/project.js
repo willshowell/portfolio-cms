@@ -28,11 +28,11 @@ exports.postProjects = function(req, res) {
 // Endpoint for GET /api/projects
 exports.getProjects = function(req, res) {
 	// Find all the projects
-	Project.find(function(err, beers) {
+	Project.find(function(err, projects) {
 		if (err) {
 			res.send(err);
 		}
-		res.json(beers);
+		res.json(projects);
 	});
 };
 
