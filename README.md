@@ -13,7 +13,7 @@ A Node API for delivering structured projects to a portfolio site.
 $ git clone https://github.com/willshowell/porfolio-cms.git
 $ cd portfolio-cms
 $ npm install
-$ npm start
+$ npm run serve
 ```
 
 ### Major TODO Tasks
