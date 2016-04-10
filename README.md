@@ -16,6 +16,11 @@ $ npm install
 $ npm run serve
 ```
 
+### Testing
+```
+npm test
+```
+
 ### Major TODO Tasks
 * [ ] Configure tests
 * [ ] Add users model
