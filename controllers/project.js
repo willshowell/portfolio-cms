@@ -79,6 +79,10 @@ exports.putProject = function(req, res) {
 		project.name = req.body.name || project.name;
 		project.tagline = req.body.tagline || project.tagline;
 		project.hero_url = req.body.hero_url || project.hero_url;
+		project.description = req.body.description || project.description
+		project.source_url = req.body.source_url || project.source_url
+		project.project_url = req.body.project_url || project.project_url
+		project.images = req.body.images || project.images
 		
 		// Save the project
 		project.save(function(err) {

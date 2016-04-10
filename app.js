@@ -41,7 +41,7 @@ apiRouter.route('/projects')
 apiRouter.route('/projects/:project_id')
 	.get(projectController.getProject)
 	.put(projectController.putProject)
-	.delete(projectController.deleteProject)
+	.delete(projectController.deleteProject);
 
 // Endpoint handler for /
 interfaceRouter.get('/', function(req, res) {
