@@ -27,8 +27,8 @@ $ npm run serve
 
 ### API Design
 
-[#### Projects](./docs/api_projects.md)
+#### [Projects](./docs/api_projects.md)
 
-[#### Blog Posts](./docs/api_blogposts.md)
+#### [Blog Posts](./docs/api_blogposts.md)
 
 
