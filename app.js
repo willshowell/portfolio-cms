@@ -9,6 +9,7 @@ var bodyParser = require('body-parser');
 
 // Import controllers
 var projectController = require('./controllers/project');
+var blogPostController = require('./controllers/blogPost');
 
 // Connect to the CMS MongoDB
 mongoose.connect('mongodb://localhost:27017/cms');
@@ -42,6 +43,17 @@ apiRouter.route('/projects/:project_id')
 	.get(projectController.getProject)
 	.put(projectController.putProject)
 	.delete(projectController.deleteProject);
+	
+// Endpoint handlers for /blogposts
+apiRouter.route('/blogposts')
+	.post(blogPostController.postBlogPosts)
+	.get(blogPostController.getBlogPosts)
+
+// Endpoint handlers for /blogposts/:blogpost_id
+apiRouter.route('/blogposts/:blogpost_id')
+	.get(blogPostController.getBlogPost)
+	.put(blogPostController.putBlogPost)
+	.delete(blogPostController.deleteBlogPost);
 
 // Endpoint handler for /
 interfaceRouter.get('/', function(req, res) {
