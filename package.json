@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/.bin/mocha",
     "start": "node ./bin/www",
     "serve": "./node_modules/.bin/nodemon ./bin/www"
   },
@@ -22,6 +22,9 @@
     "serve-favicon": "^2.3.0"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-http": "^2.0.1",
+    "mocha": "^2.4.5",
     "nodemon": "^1.9.1"
   }
 }
