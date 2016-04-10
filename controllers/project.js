@@ -1,3 +1,6 @@
+// Import packages
+var deleteKey = require('key-del');
+
 // Import models
 var Project = require('../models/project');
 
@@ -31,14 +34,27 @@ exports.postProjects = function(req, res) {
 // Endpoint for GET /api/projects
 exports.getProjects = function(req, res) {
 	// Find all the projects
+	
 	Project.find(function(err, projects) {
 		if (err) {
 			res.send(err);
 		}
-		res.json(projects);
+
+		var filteredProjects = [];
+
+		projects.forEach(function(project, index) {
+			var filteredProject = {
+				_id: project._id,
+				name: project.name,
+				tagline: project.tagline,
+				hero_url: project.hero_url
+			};
+			filteredProjects.push(filteredProject);
+		});
+		
+		res.json(filteredProjects);
 	});
 };
-
 
 // Endpoint for GET /api/projects/:project_id
 exports.getProject = function(req, res) {
@@ -50,7 +66,6 @@ exports.getProject = function(req, res) {
 		res.json(project);
 	});
 };
-
 
 // Endpoint for PUT /api/projects/:project_id
 exports.putProject = function(req, res) {
@@ -78,7 +93,6 @@ exports.putProject = function(req, res) {
 			
 	});
 };
-
 
 // Endpoint for DELETE /api/projects/:project_id
 exports.deleteProject = function(req, res) {
