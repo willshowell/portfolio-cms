@@ -35,13 +35,13 @@ GET /api/v1/projects
 ```json
 [
   {
-    "id": "123456abcd",
+    "_id": "570a6bb10fe400a43fbb572c",
     "name": "My Project",
     "tagline": "ToDo app with Node.js",
     "hero_url": "myupload.s3.awazonaws.com/project1.jpg"
   },
   {
-    "id": "789012wxyz",
+    "_id": "570a6bd40fe400a43fbb572d",
     "name": "Advanced Project",
     "tagline": "Facebook emulator",
     "hero_url": "myupload.s3.awazonaws.com/project2.jpg"
@@ -55,20 +55,20 @@ GET /api/v1/projects/123456abcd
 ```
 ```json
 {
-  "id": "123456abcd",
+  "_id": "570a6bb10fe400a43fbb572c",
   "name": "My Project",
   "tagline": "ToDo app with Node.js",
   "description": "I built this app as an exercise to...",
   "hero_url": "myupload.s3.awazonaws.com/project1.jpg",
   "images": [
-    {"image_url": "myupload.s3.awazonaws.com/project1a.jpg"},
-    {"image_url": "myupload.s3.awazonaws.com/project1b.jpg"},
-    {"image_url": "myupload.s3.awazonaws.com/project1c.jpg"}
+    "myupload.s3.awazonaws.com/project1a.jpg",
+    "myupload.s3.awazonaws.com/project1b.jpg",
+    "myupload.s3.awazonaws.com/project1c.jpg"
   ],
   "source_url": "github.com/username/todo-app",
-  "url": "todoapp.com",
-  "created_at": 1459873415,
-  "updated_at": 1459873415
+  "project_url": "todoapp.com",
+  "created_at": "2016-04-09T11:32:39.464Z",
+  "updated_at": "2016-04-10T15:05:21.346Z"
 }
 ```
 
@@ -80,7 +80,7 @@ POST /api/v1/projects
 HTTP/1.1 200 OK
 {
   "message": "Project created",
-  "data": project_data
+  "data": {}
 }
 ```
 
@@ -91,7 +91,7 @@ PUT /api/v1/projects/:project_id
 ```json
 {
   "message": "Project updated",
-  "data": project_data
+  "data": {}
 }
 ```
 	
