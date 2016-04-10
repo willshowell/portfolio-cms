@@ -27,7 +27,7 @@ GET /api/v1/blogposts/570a6bb10fe400a43fbb572c
 {
   "_id": "570a6bb10fe400a43fbb572c",
   "title": "My First Post",
-  "text": "Today was a bad day, and I think the reason why is because..."
+  "text": "Today was a bad day, and I think the reason why is because...",
   "created_at": "2016-04-09T11:32:39.464Z",
   "updated_at": "2016-04-10T15:05:21.346Z"
 }
