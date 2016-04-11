@@ -11,11 +11,18 @@ var bodyParser = require('body-parser');
 var projectController = require('./controllers/project');
 var blogPostController = require('./controllers/blogPost');
 
-// Connect to the CMS MongoDB
-mongoose.connect('mongodb://localhost:27017/cms');
-
 // Create express application
 var app = express();
+
+// Connect to the CMS MongoDB
+console.log(app.settings.env);
+var mongoURI = 'mongodb://localhost:27017/cms';
+if (process.env.NODE_ENV === 'test') {
+	mongoURI = 'mongodb://localhost:27017/cms-testing';
+}
+mongoose.connect(mongoURI);
+
+
 
 // Setup view engine
 app.set('views', path.join(__dirname, 'views'));
