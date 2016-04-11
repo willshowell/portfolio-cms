@@ -47,7 +47,7 @@ describe('Blog Posts', function() {
 		});
 		newBlogPost.save(function(err) {
 			done();
-		})
+		});
 	});
 	
 	// Clear the database after each test
@@ -74,19 +74,51 @@ describe('Blog Posts', function() {
 				res.body[0].should.have.property('short_text');
 				
 				// Test data is correct
-				var longText = '';
+				var shortText = '';
 				for (var i = 0; i < 300; i++) {
-					longText += '!';
+					shortText += '!';
 				}
 				res.body[0].title.should.equal('My first blog post');
-				res.body[0].short_text.should.equal(longText);
+				res.body[0].short_text.should.equal(shortText);
 				
 				done();
 			});
 	});
 	
-	it('should list a single blog post on /blogposts/:id GET');
-	
+	it('should list a single blog post on /blogposts/:id GET', function(done) {
+		var longText = '';
+		for (var i = 0; i < 400; i++) {
+			longText += '~';
+		}
+		var newBlogPost = BlogPost({
+			title: "My second blog post",
+			text: longText
+		});
+		newBlogPost.save(function(err, data) {
+			chai.request(server)
+				.get(baseRoute + '/blogposts/' + data.id)
+				.end(function(err, res) {
+					
+					// Test that returned object is correct
+					res.should.have.status(200);
+					res.should.be.json;
+					res.body.should.be.a('object');
+					
+					// Test that all data is available
+					res.body.should.have.property('_id');
+					res.body.should.have.property('title');
+					res.body.should.have.property('text');
+					
+					// Test data is correct
+					res.body._id.should.equal(data.id);
+					res.body.title.should.equal('My second blog post');
+					res.body.text.should.equal(longText);
+					res.body.created_at.should.equal(res.body.updated_at);
+					
+					done();
+				});
+		});
+	});
 	
 	it('should add a single blog post on /blogposts POST', function(done) {
 		chai.request(server)
@@ -118,7 +150,41 @@ describe('Blog Posts', function() {
 			});
 	});
 	
-	it('should update a single blog post on /blogposts/:id PUT');
+	it('should update a single blog post on /blogposts/:id PUT', function(done) {
+		chai.request(server)
+			.get(baseRoute + '/blogposts')
+			.end(function(err, res) {
+				chai.request(server)
+					.put(baseRoute + '/blogposts/' + res.body[0]._id)
+					.send({'title': 'The History of the World'})
+					.end(function(error, response) {
+						
+						// Test that returned object is correct
+						response.should.have.status(200);
+						response.should.be.json;
+						response.body.should.be.a('object');
+						response.body.should.have.property('message');
+						response.body.message.should.equal('Blog post updated');
+						response.body.should.have.property('data');
+						
+						// Test that all data is available
+						response.body.data.should.have.property('_id');
+						response.body.data.should.have.property('title');
+						response.body.data.should.have.property('text');
+						response.body.data.should.have.property('created_at');
+						response.body.data.should.have.property('updated_at');
+						
+						// Test data is correct
+						var new_updated_at = response.body.data.updated_at;
+						response.body.data.title.should.equal('The History of the World');
+						response.body.data.created_at.should.not.equal(new_updated_at);
+					
+						done();
+					});
+			});
+	});
 	
-	it('should delete a single blog post on /blogposts/:id DELETE');
+	it('should delete a single blog post on /blogposts/:id DELETE', function(done) {
+		
+	});
 });
