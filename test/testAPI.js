@@ -1,7 +1,17 @@
+// Set the environment to test
+process.env.NODE_ENV = 'test'
+
+// Import packages
 var chai = require('chai');
 var chaiHttp = require('chai-http');
-var server = require('../app');
 var should = chai.should();
+
+// Import server
+var server = require('../app');
+
+// Import models
+var BlogPost = require('../models/blogPost');
+var Project = require('../models/project');
 
 chai.use(chaiHttp);
 
@@ -19,13 +29,58 @@ describe('Projects', function() {
 // Test /api/v1/blogposts functionality
 describe('Blog Posts', function() {
 	
+	// Clear the database before any tests begin
+	before(function(done) {
+		BlogPost.collection.drop();
+		done();
+	});
+	
+	// Instantiate the database with a dummy post before each test
+	beforeEach(function(done) {
+		var longText = '';
+		for (var i = 0; i < 400; i++) {
+			longText += '!';
+		}
+		var newBlogPost = BlogPost({
+			title: "My first blog post",
+			text: longText
+		});
+		newBlogPost.save(function(err) {
+			done();
+		})
+	});
+	
+	// Clear the database after each test
+	afterEach(function(done) {
+		BlogPost.collection.drop();
+		done();
+	});
+	
+	// Run tests
 	it('should list all blog posts on /blogposts GET', function(done) {
 		chai.request(server)
 			.get(baseRoute + '/blogposts')
 			.end(function(err, res) {
+				
+				// Test that returned object is correct
 				res.should.have.status(200);
 				res.should.be.json;
 				res.body.should.be.a('array');
+				res.body.should.have.length(1);
+				
+				// Test that all data is available
+				res.body[0].should.have.property('_id');
+				res.body[0].should.have.property('title');
+				res.body[0].should.have.property('short_text');
+				
+				// Test data is correct
+				var longText = '';
+				for (var i = 0; i < 300; i++) {
+					longText += '!';
+				}
+				res.body[0].title.should.equal('My first blog post');
+				res.body[0].short_text.should.equal(longText);
+				
 				done();
 			});
 	});
