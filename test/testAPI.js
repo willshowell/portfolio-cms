@@ -185,6 +185,34 @@ describe('Blog Posts', function() {
 	});
 	
 	it('should delete a single blog post on /blogposts/:id DELETE', function(done) {
-		
+		chai.request(server)
+			.get(baseRoute + '/blogposts')
+			.end(function(err, res) {
+				
+				chai.request(server)
+					.delete(baseRoute + '/blogposts/' + res.body[0]._id)
+					.end(function(error, response) {
+						
+						// Test that returned object is correct
+						response.should.have.status(200);
+						response.should.be.json;
+						response.body.should.be.a('object');
+						response.body.should.have.property('message');
+						response.body.message.should.equal('Blog post deleted');
+						
+						chai.request(server)
+							.get(baseRoute + '/blogposts')
+							.end(function(error_, response_) {
+								
+								// Test that no blog posts remain
+								response.should.have.status(200);
+								response.should.be.json;
+								response.body.should.be.a('array');
+								response.body.should.have.length(0);
+							});
+						
+						done();
+					});
+			});
 	});
 });
