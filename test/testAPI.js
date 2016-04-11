@@ -19,10 +19,70 @@ var baseRoute = '/api/v1';
 
 // Test /api/v1/projects functionality 
 describe('Projects', function() {
-	it('should list all projects on /projects GET');
+	
+	// Clear the database before any tests begin
+	before(function(done) {
+		Project.collection.drop();
+		done();
+	});
+	
+	// Instantiate the database with a dummy project before each test
+	beforeEach(function(done) {
+		var newProject = Project({
+			name: "My first project",
+			tagline: "It does a thing",
+			description: "First, it does this. Second, it does this.",
+			hero_url: "http://sample-website.com/sample.jpg",
+			source_url: "http://github.com/username/sample-website",
+			project_url: "http://sample-website.com",
+			images: [
+				"http://myupload.com/project1a.jpg",
+				"http://myupload.com/project2a.jpg"
+			]
+		});
+		newProject.save(function(err) {
+			done();
+		});		
+	});
+	
+	// Clear the database after each test
+	afterEach(function(done) {
+		Project.collection.drop();
+		done();
+	});
+	
+	it('should list all projects on /projects GET', function(done) {
+		chai.request(server)
+			.get(baseRoute + '/projects')
+			.end(function(err, res) {
+				
+				// Test that returned object is correct
+				res.should.have.status(200);
+				res.should.be.json;
+				res.body.should.be.a('array');
+				res.body.should.have.length(1);
+				
+				// Test that all data is available
+				res.body[0].should.have.property('_id');
+				res.body[0].should.have.property('name');
+				res.body[0].should.have.property('tagline');
+				res.body[0].should.have.property('hero_url');
+				
+				// Test data is correct
+				res.body[0].name.should.equal('My first project');
+				res.body[0].tagline.should.equal('It does a thing');
+				res.body[0].hero_url.should.equal('http://sample-website.com/sample.jpg');
+							
+				done();
+			});
+	});
+	
 	it('should list a single project on /projects/:id GET');
+	
 	it('should add a single project on /projects POST');
+	
 	it('should update a single project on /projects/:id PUT');
+	
 	it('should delete a single project on /projects/:id DELETE');
 });
 
