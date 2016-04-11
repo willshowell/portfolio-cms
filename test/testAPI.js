@@ -131,9 +131,99 @@ describe('Projects', function() {
 		});
 	});
 	
-	it('should add a single project on /projects POST');
+	it('should add a single project on /projects POST', function(done) {
+		chai.request(server)
+			.post(baseRoute + '/projects')
+			.send({
+				name: "My second project",
+				tagline: "It does another thing",
+				description: "Third, it does this. Fourth, it does this.",
+				hero_url: "http://sample-website.com/example.jpg",
+				source_url: "http://github.com/username/example-website",
+				project_url: "http://example-website.com",
+				images: [
+					"http://example.com/project1a.jpg",
+					"http://example.com/project2a.jpg"
+				]
+			})
+			.end(function(err, res) {
+				
+				// Test that returned object is correct
+				res.should.have.status(200);
+				res.should.be.json;
+				res.body.should.be.a('object');
+				res.body.should.have.property('message');
+				res.body.message.should.equal('Project created');
+				res.body.should.have.property('data');
+				
+				// Test that all data is available
+				res.body.data.should.have.property('_id');
+				res.body.data.should.have.property('name');
+				res.body.data.should.have.property('tagline');
+				res.body.data.should.have.property('description');
+				res.body.data.should.have.property('hero_url');
+				res.body.data.should.have.property('source_url');
+				res.body.data.should.have.property('project_url');
+				res.body.data.should.have.property('images');
+				res.body.data.should.have.property('created_at');
+				res.body.data.should.have.property('updated_at');
+				
+				// Test data is correct
+				res.body.data.name.should.equal('My second project');
+				res.body.data.tagline.should.equal('It does another thing');
+				res.body.data.description.should.equal('Third, it does this. Fourth, it does this.');
+				res.body.data.hero_url.should.equal('http://sample-website.com/example.jpg');
+				res.body.data.source_url.should.equal('http://github.com/username/example-website');
+				res.body.data.project_url.should.equal('http://example-website.com');
+				
+				res.body.data.images.should.be.a('array');
+				res.body.data.images.should.have.length(2);
+				res.body.data.images[0].should.equal('http://example.com/project1a.jpg');
+				res.body.data.images[1].should.equal('http://example.com/project2a.jpg');
+				res.body.data.created_at.should.equal(res.body.data.updated_at);
+				
+				done();
+			});
+	});
 	
-	it('should update a single project on /projects/:id PUT');
+	it('should update a single project on /projects/:id PUT', function(done) {
+		chai.request(server)
+			.get(baseRoute + '/projects')
+			.end(function(err, res) {
+				chai.request(server)
+					.put(baseRoute + '/projects/' + res.body[0]._id)
+					.send({'name': 'A New Name for My Project'})
+					.end(function(error, response) {
+						
+						// Test that returned object is correct
+						response.should.have.status(200);
+						response.should.be.json;
+						response.body.should.be.a('object');
+						response.body.should.have.property('message');
+						response.body.message.should.equal('Project updated');
+						response.body.should.have.property('data');
+						
+						// Test that all data is available
+						response.body.data.should.have.property('_id');
+						response.body.data.should.have.property('name');
+						response.body.data.should.have.property('tagline');
+						response.body.data.should.have.property('description');
+						response.body.data.should.have.property('hero_url');
+						response.body.data.should.have.property('source_url');
+						response.body.data.should.have.property('project_url');
+						response.body.data.should.have.property('images');
+						response.body.data.should.have.property('created_at');
+						response.body.data.should.have.property('updated_at');
+						
+						// Test data is correct
+						var new_updated_at = response.body.data.updated_at;
+						response.body.data.name.should.equal('A New Name for My Project');
+						response.body.data.created_at.should.not.equal(new_updated_at);
+					
+						done();
+					});
+			});
+	});
 	
 	it('should delete a single project on /projects/:id DELETE');
 });
