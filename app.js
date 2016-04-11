@@ -10,6 +10,9 @@ var bodyParser = require('body-parser');
 // Import controllers
 var projectController = require('./controllers/project');
 
+//test new User controller
+var newUserController = require('./controllers/user');
+
 // Connect to the CMS MongoDB
 mongoose.connect('mongodb://localhost:27017/cms');
 
@@ -41,7 +44,14 @@ apiRouter.route('/projects')
 apiRouter.route('/projects/:project_id')
 	.get(projectController.getProject)
 	.put(projectController.putProject)
-	.delete(projectController.deleteProject)
+	.delete(projectController.deleteProject);
+
+//test route for new User
+// apiRouter.route('/new_user').
+// 	put(newUserController.newUser);
+
+// apiRouter.route('/getusers').
+// 	get(newUserController.getUsers);
 
 // Endpoint handler for /
 interfaceRouter.get('/', function(req, res) {
