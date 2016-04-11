@@ -18,7 +18,7 @@ $ npm run serve
 
 ### Testing
 ```
-npm test
+$ npm test
 ```
 
 ### Major TODO Tasks
