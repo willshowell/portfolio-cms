@@ -77,7 +77,59 @@ describe('Projects', function() {
 			});
 	});
 	
-	it('should list a single project on /projects/:id GET');
+	it('should list a single project on /projects/:id GET', function(done) {
+		var newProject = Project({
+			name: "My second project",
+			tagline: "It does another thing",
+			description: "Third, it does this. Fourth, it does this.",
+			hero_url: "http://sample-website.com/example.jpg",
+			source_url: "http://github.com/username/example-website",
+			project_url: "http://example-website.com",
+			images: [
+				"http://example.com/project1a.jpg",
+				"http://example.com/project2a.jpg"
+			]
+		});
+		newProject.save(function(err, data) {
+			chai.request(server)
+				.get(baseRoute + '/projects/' + data.id)
+				.end(function(err, res) {
+					
+					// Test that returned object is correct
+					res.should.have.status(200);
+					res.should.be.json;
+					res.body.should.be.a('object');
+					
+					// Test that all data is available
+					res.body.should.have.property('_id');
+					res.body.should.have.property('name');
+					res.body.should.have.property('tagline');
+					res.body.should.have.property('description');
+					res.body.should.have.property('hero_url');
+					res.body.should.have.property('source_url');
+					res.body.should.have.property('project_url');
+					res.body.should.have.property('images');
+					
+					// Test data is correct
+					res.body._id.should.equal(data.id);
+					res.body.name.should.equal('My second project');
+					res.body.tagline.should.equal('It does another thing');
+					res.body.description.should.equal('Third, it does this. Fourth, it does this.');
+					res.body.hero_url.should.equal('http://sample-website.com/example.jpg');
+					res.body.source_url.should.equal('http://github.com/username/example-website');
+					res.body.project_url.should.equal('http://example-website.com');
+					
+					res.body.images.should.be.a('array');
+					res.body.images.should.have.length(2);
+					res.body.images[0].should.equal('http://example.com/project1a.jpg');
+					res.body.images[1].should.equal('http://example.com/project2a.jpg');
+					
+					res.body.created_at.should.equal(res.body.updated_at);
+					
+					done();
+				});
+		});
+	});
 	
 	it('should add a single project on /projects POST');
 	
