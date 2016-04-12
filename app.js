@@ -6,6 +6,7 @@ var logger = require('morgan');
 var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var passport = require('passport');
 
 // Import controllers
 var projectController = require('./controllers/project');
@@ -17,6 +18,9 @@ var userController = require('./controllers/user');
 mongoose.connect('mongodb://localhost:27017/cms');
 // Create express application
 var app = express();
+
+//initialize passport
+app.use(passport.initialize());
 
 // Setup view engine
 app.set('views', path.join(__dirname, 'views'));
@@ -61,6 +65,14 @@ interfaceRouter.get('/', function(req, res) {
 //creating a new User
 interfaceRouter.route('/newUser')
 	.post(userController.newUser);
+
+//updating User
+interfaceRouter.route('/updateUser')
+	.post(userController.changeUser);
+
+//requesting new Secret and Client_ID
+interfaceRouter.route('/newKey')
+	.post(userController.apiAuthenticated, userController.generateCred);
 
 interfaceRouter.post('/test',function(req,res){
 	res.json({message: "läuft"});
