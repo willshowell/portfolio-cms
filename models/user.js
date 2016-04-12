@@ -32,9 +32,7 @@ UserSchema.pre('save', function(cb){
 	var user = this;
 
 	//Stop if password and secret hasn´t changed
-	if(!(user.isModified('password') | user.isModified('secret'))){
-		return cb();
-	};
+	if(!(user.isModified('password') | user.isModified('secret'))) return cb();
 
 	//Hash password and secret if one of it changed
 
@@ -51,7 +49,10 @@ UserSchema.pre('save', function(cb){
 	    	if(err) return cb(err);
 	    	user.secret = hash;
 	    });
+	    cb();
 	  });
 });
 
 module.exports = mongoose.model('User', UserSchema);
+
+

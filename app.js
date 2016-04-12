@@ -11,11 +11,10 @@ var bodyParser = require('body-parser');
 var projectController = require('./controllers/project');
 
 //test new User controller
-var newUserController = require('./controllers/user');
+var userController = require('./controllers/user');
 
 // Connect to the CMS MongoDB
-mongoose.connect('mongodb://localhost:27017/cms');
-
+ 
 // Create express application
 var app = express();
 
@@ -54,8 +53,17 @@ apiRouter.route('/projects/:project_id')
 // 	get(newUserController.getUsers);
 
 // Endpoint handler for /
+
 interfaceRouter.get('/', function(req, res) {
 	res.render('index', { title: 'Portfolio CMS' });
+});
+
+//creating a new User
+interfaceRouter.route('/newUser')
+	.post(userController.newUser);
+
+interfaceRouter.post('test',function(req,res){
+	res.json({message: "läuft"});
 });
 
 // Register all the routes (api routes start with /api/v1/)

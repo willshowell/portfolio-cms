@@ -1,10 +1,52 @@
 // Import models
 
 var User = require('../models/user');
+//middleware for auth.
+var passport = require('passport');
+var Strategy = require('passport-http').BasicStrategy;
+//random key generator
+var keygen = require("generate-key");
 
 //for creating new users
 exports.newUser = function(req,res){
+	console.log("function called");
+	var user = new User();
+	var client_id = keygen.generateKey('7');
+	var secret = keygen.generateKey('16');
 
+	user.username = req.body.username;
+	user.password = req.body.password;
+	user.client_id = client_id;
+	user.secret = secret;
+	console.log(req.body.username);
+
+	User.findOne({'username' : user.username},'username',function(err,username){
+
+		if(username){
+			res.json({
+				message: "User already exists",
+				data: null
+			});
+			return;
+		}
+
+		user.save(function(err){
+
+			if(err){
+				res.send(err);
+				console.log(err);
+				return;
+			}
+			res.json({
+				message: "User created",
+				data: user
+			});
+			console.log("new user generated");
+			return;
+		});
+	});
+	
+	
 }
 
 //changing user data
@@ -13,7 +55,7 @@ exports.changeUser = function(req,res){
 }
 
 //generating new secret and client_id 
-//This function only generates it it has to be combined wirh changeuser() to save the new data
+//This function only generates them it has to be combined with changeuser() to save the new data
 exports.generateCred = function(req,res){
 
 }
@@ -28,38 +70,4 @@ exports.interAuthenticated = function(req,res){
 
 }
 
-/*
-These are test function to get started with express and mongoose
-
-exports.newUser = function(req,res){
-	var new_user = new User();
-
-	new_user.username = req.body.username;
-	new_user.password = req.body.password;
-
-
-	new_user.save(function(err){
-		if(err){
-			res.send(err)
-		}
-		res.json({
-			message: "User created",
-			data: new_user
-		});
-	});
-	console.log("new user should be generated");
-
-};
-
-exports.getUsers = function(req,res){
-	User.find(function(err, users){
-		if(err){
-			res.send(err);
-		}
-
-		res.send(users);
-		
-	})
-}
-*/
 
