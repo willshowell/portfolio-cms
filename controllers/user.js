@@ -18,9 +18,13 @@ exports.newUser = function(req,res){
 	user.password = req.body.password;
 	user.client_id = client_id;
 	user.secret = secret;
-	console.log(req.body.username);
+
+	console.log(req.body);
 
 	User.findOne({'username' : user.username},'username',function(err,username){
+
+
+console.log("test");
 
 		if(username){
 			res.json({

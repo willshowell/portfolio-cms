@@ -14,7 +14,7 @@ var projectController = require('./controllers/project');
 var userController = require('./controllers/user');
 
 // Connect to the CMS MongoDB
- 
+mongoose.connect('mongodb://localhost:27017/cms');
 // Create express application
 var app = express();
 
@@ -62,7 +62,7 @@ interfaceRouter.get('/', function(req, res) {
 interfaceRouter.route('/newUser')
 	.post(userController.newUser);
 
-interfaceRouter.post('test',function(req,res){
+interfaceRouter.post('/test',function(req,res){
 	res.json({message: "läuft"});
 });
 
