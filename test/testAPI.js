@@ -225,7 +225,37 @@ describe('Projects', function() {
 			});
 	});
 	
-	it('should delete a single project on /projects/:id DELETE');
+	it('should delete a single project on /projects/:id DELETE', function(done) {
+		chai.request(server)
+			.get(baseRoute + '/projects')
+			.end(function(err, res) {
+				
+				chai.request(server)
+					.delete(baseRoute + '/projects/' + res.body[0]._id)
+					.end(function(error, response) {
+						
+						// Test that returned object is correct
+						response.should.have.status(200);
+						response.should.be.json;
+						response.body.should.be.a('object');
+						response.body.should.have.property('message');
+						response.body.message.should.equal('Project deleted');
+						
+						chai.request(server)
+							.get(baseRoute + '/projects')
+							.end(function(error_, response_) {
+								
+								// Test that no projects remain
+								response_.should.have.status(200);
+								response_.should.be.json;
+								response_.body.should.be.a('array');
+								response_.body.should.have.length(0);
+							});
+						
+						done();
+					});
+			});
+	});
 });
 
 // Test /api/v1/blogposts functionality
@@ -407,10 +437,10 @@ describe('Blog Posts', function() {
 							.end(function(error_, response_) {
 								
 								// Test that no blog posts remain
-								response.should.have.status(200);
-								response.should.be.json;
-								response.body.should.be.a('array');
-								response.body.should.have.length(0);
+								response_.should.have.status(200);
+								response_.should.be.json;
+								response_.body.should.be.a('array');
+								response_.body.should.have.length(0);
 							});
 						
 						done();
