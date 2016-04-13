@@ -58,7 +58,7 @@ apiRouter.route('/projects/:project_id')
 
 // Endpoint handler for /
 
-interfaceRouter.get('/', function(req, res) {
+interfaceRouter.get('/', userController.interAuthenticated, function(req, res) {
 	res.render('index', { title: 'Portfolio CMS' });
 });
 
@@ -72,7 +72,7 @@ interfaceRouter.route('/updateUser')
 
 //requesting new Secret and Client_ID
 interfaceRouter.route('/newKey')
-	.post(userController.apiAuthenticated, userController.generateCred);
+	.post(userController.apiAuthenticated, userController.newSecret);
 
 interfaceRouter.post('/test',function(req,res){
 	res.json({message: "läuft"});

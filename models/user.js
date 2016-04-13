@@ -14,14 +14,13 @@ var UserSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
-	client_id: {
-		type: String,
-		unique: true,
-		required: true
-	},
 	secret: {
 		type: String,
 		required: true
+	},
+	email: {
+		type: String,
+		required: false
 	}
 });
 
@@ -32,10 +31,9 @@ UserSchema.pre('save', function(cb){
 	var user = this;
 
 	//Stop if password and secret hasn´t changed
-	if(!(user.isModified('password') | user.isModified('secret'))) return cb();
+	if(!user.isModified('password')) return cb();
 
 	//Hash password and secret if one of it changed
-
 	bcrypt.genSalt(5, function(err, salt) {
 	    if (err) return cb(err);
 
@@ -43,13 +41,8 @@ UserSchema.pre('save', function(cb){
 	    bcrypt.hash(user.password, salt, null, function(err, hash) {
 	      if (err) return cb(err);
 	      user.password = hash;
-	    });
-	    //hash secret
-	    bcrypt.hash(user.secret, salt, null, function(err, hash) {
-	    	if(err) return cb(err);
-	    	user.secret = hash;
-	    });
-	    cb();
+	      cb();
+	    });   
 	  });
 });
 
@@ -63,10 +56,13 @@ UserSchema.methods.verifyPassword = function(password, cb) {
 };
 
 UserSchema.methods.verifySecret = function(secret, cb) {
-  bcrypt.compare(secret, this.secret, function(err, isMatch) {
-    if (err) return cb(err);
-    cb(null, isMatch);
-  });
+  
+  if(this.secret == secret){
+  	return cb(true);
+  }
+  else{
+  	return cb(false);
+  }
 };
 
 

@@ -12,12 +12,10 @@ var keygen = require("generate-key");
 exports.newUser = function(req,res){
 	console.log("function called");
 	var user = new User();
-	var client_id = keygen.generateKey('7');
-	var secret = keygen.generateKey('16');
+	var secret = keygen.generateKey('24');
 
 	user.username = req.body.username;
 	user.password = req.body.password;
-	user.client_id = client_id;
 	user.secret = secret;
 
 	console.log(req.body);
@@ -64,7 +62,6 @@ exports.changeUser = function(req,res){
 	User.update({'username' : req.body.username}, { $set: {
 			username : req.body.username,
 			password : req.body.password,
-			client_id : req.body.client_id,
 			secret : req.body.secret,
 		}
 	}, function(err){
@@ -83,15 +80,13 @@ exports.changeUser = function(req,res){
 }
 
 //generating new secret and client_id and saving it in the DB
-exports.generateCred = function(req,res){
+exports.newSecret = function(req,res){
 
 	//TODO adding validation if client_id already exists
 
-	var new_client_id = keygen.generateKey('7');
-	var new_secret = keygen.generateKey('16');
+	var new_secret = keygen.generateKey('24');
 
-	User.update({'username' : req.body.client_id}, { $set: {
-		'client_id' : new_client_id,
+	User.update({'username' : req.body.username}, { $set: {
 		'secret' : new_secret
 	}},function(err){
 		if(err){
@@ -102,7 +97,6 @@ exports.generateCred = function(req,res){
 		res.json({
 			message: "New Secret and Client_ID stored",
 			data: {
-				client_id: new_client_id,
 				secret: new_secret
 			}
 		});
@@ -113,16 +107,16 @@ exports.generateCred = function(req,res){
 exports.apiAuthenticated = passport.authenticate('api_basic', { session : false });
 
 //verify Interface Access
-exports.interAuthenticated = function(req,res){
-
-}
+exports.interAuthenticated = passport.authenticate('interface', {session: false});
 
 
 //Passport functions
 
+//passport for api 
 passport.use('api_basic', new Strategy(
-	function(client_id, secret, cb){
-		User.findOne({'client_id': client_id},function(err, client_id){
+	function(username, secret, cb){
+
+		User.findOne({'username': username},function(err, username){
 
 			if (err){
 				console.log(err + "1");
@@ -130,28 +124,54 @@ passport.use('api_basic', new Strategy(
 			} 
 
 	      // No user found with that username
-	      	if (!client_id) {
+	      	if (!username) {
 	      		console.log(err + "2");
 	      		return cb(null, false);
 	      	}
 
 	      // Make sure the secret is correct
-	      client_id.verifySecret(secret, function(err, isMatch) {
-	        
-	        if (err) {
-	        	console.log(err + "3"); 
-	        	return cb(err); 
-	        }
+	      username.verifySecret(secret, function(isMatch) {
+	        console.log("secret");
 
 	        // Password did not match
 	        if (!isMatch) { return cb(null, false); }
 
 	        // Success
-	        return cb(null, client_id);
+	        return cb(null, username);
       		});
 		})
 	}
 ));
+
+//passport for interface 
+passport.use('interface', new Strategy(
+	function(username, password, cb){
+		User.findOne({'username': username},function(err, username){
+			if (err){
+				console.log(err);
+				return cb(err);
+			}
+
+			//No User found
+			if(!username){
+				console.log(err);
+				return cb(null,false);
+			}
+
+			//Make sure password is correct
+			username.verifyPassword(password, function(err,isMatch){
+				
+				if(err) return cb(err);
+
+				//password doesnt match
+				if(!isMatch) return cb(null,false);
+
+				//Success
+				return cb(null, username);
+
+			})
+		})
+	}))
 
 
 
