@@ -10,24 +10,19 @@ var passport = require('passport');
 
 // Import controllers
 var projectController = require('./controllers/project');
-<<<<<<< HEAD
+
 
 //test new User controller
 var userController = require('./controllers/user');
 
-// Connect to the CMS MongoDB
-mongoose.connect('mongodb://localhost:27017/cms');
-=======
 var blogPostController = require('./controllers/blogPost');
->>>>>>> 70db3a9f847bdabf8aefd8dfb5cdb9ceb8ed8e00
 
 // Create express application
 var app = express();
 
-<<<<<<< HEAD
 //initialize passport
 app.use(passport.initialize());
-=======
+
 // Connect to the CMS MongoDB
 console.log(app.settings.env);
 var mongoURI = 'mongodb://localhost:27017/cms';
@@ -36,8 +31,6 @@ if (process.env.NODE_ENV === 'test') {
 }
 mongoose.connect(mongoURI);
 
-
->>>>>>> 70db3a9f847bdabf8aefd8dfb5cdb9ceb8ed8e00
 
 // Setup view engine
 app.set('views', path.join(__dirname, 'views'));
@@ -65,15 +58,7 @@ apiRouter.route('/projects/:project_id')
 	.get(projectController.getProject)
 	.put(projectController.putProject)
 	.delete(projectController.deleteProject);
-<<<<<<< HEAD
 
-//test route for new User
-// apiRouter.route('/new_user').
-// 	put(newUserController.newUser);
-
-// apiRouter.route('/getusers').
-// 	get(newUserController.getUsers);
-=======
 	
 // Endpoint handlers for /blogposts
 apiRouter.route('/blogposts')
@@ -85,7 +70,6 @@ apiRouter.route('/blogposts/:blogpost_id')
 	.get(blogPostController.getBlogPost)
 	.put(blogPostController.putBlogPost)
 	.delete(blogPostController.deleteBlogPost);
->>>>>>> 70db3a9f847bdabf8aefd8dfb5cdb9ceb8ed8e00
 
 // Endpoint handler for /
 
