@@ -23,8 +23,8 @@ $ npm test
 
 ### Major TODO Tasks
 * [ ] Configure tests
-* [ ] Add users model
-* [ ] Implement authentication
+* [x] Add users model
+* [x] Implement authentication
 * [ ] Create front-end management tool
 * [ ] Add image upload feature
 * [X] Extend functionality for markdown blog posts
