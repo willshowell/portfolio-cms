@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
 
 //User schema
+//@email not required yet might change that for passwort forgotten function
 var UserSchema = new mongoose.Schema({
 	username: {
 		type: String,
@@ -25,7 +26,6 @@ var UserSchema = new mongoose.Schema({
 });
 
 //this is gonna be called before user.save()
-
 UserSchema.pre('save', function(cb){
 
 	var user = this;
@@ -33,7 +33,7 @@ UserSchema.pre('save', function(cb){
 	//Stop if password and secret hasn´t changed
 	if(!user.isModified('password')) return cb();
 
-	//Hash password and secret if one of it changed
+	//Hash password if it changed
 	bcrypt.genSalt(5, function(err, salt) {
 	    if (err) return cb(err);
 
@@ -47,7 +47,6 @@ UserSchema.pre('save', function(cb){
 });
 
 //Verify PW
-
 UserSchema.methods.verifyPassword = function(password, cb) {
   bcrypt.compare(password, this.password, function(err, isMatch) {
     if (err) return cb(err);
@@ -55,6 +54,7 @@ UserSchema.methods.verifyPassword = function(password, cb) {
   });
 };
 
+//Verify Secret
 UserSchema.methods.verifySecret = function(secret, cb) {
   
   if(this.secret == secret){

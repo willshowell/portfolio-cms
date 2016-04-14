@@ -16,6 +16,7 @@ var userController = require('./controllers/user');
 
 // Connect to the CMS MongoDB
 mongoose.connect('mongodb://localhost:27017/cms');
+
 // Create express application
 var app = express();
 
@@ -58,24 +59,8 @@ apiRouter.route('/projects/:project_id')
 
 // Endpoint handler for /
 
-interfaceRouter.get('/', userController.interAuthenticated, function(req, res) {
+interfaceRouter.get('/', function(req, res) {
 	res.render('index', { title: 'Portfolio CMS' });
-});
-
-//creating a new User
-interfaceRouter.route('/newUser')
-	.post(userController.newUser);
-
-//updating User
-interfaceRouter.route('/updateUser')
-	.post(userController.changeUser);
-
-//requesting new Secret and Client_ID
-interfaceRouter.route('/newKey')
-	.post(userController.apiAuthenticated, userController.newSecret);
-
-interfaceRouter.post('/test',function(req,res){
-	res.json({message: "läuft"});
 });
 
 // Register all the routes (api routes start with /api/v1/)

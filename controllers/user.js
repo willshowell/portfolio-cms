@@ -1,32 +1,33 @@
 
 // Import models
-
 var User = require('../models/user');
+
 //middleware for auth.
+//for usage check https://passportjs.org
 var passport = require('passport');
 var Strategy = require('passport-http').BasicStrategy;
+
 //random key generator
 var keygen = require("generate-key");
 
-//for creating new users
+//creating new users
 exports.newUser = function(req,res){
-	console.log("function called");
+	//console.log("function called");
 	var user = new User();
 	var secret = keygen.generateKey('24');
 
 	user.username = req.body.username;
 	user.password = req.body.password;
 	user.secret = secret;
+	if(req.body.email){
+		user.email = req.body.email;
+	}
 
-	console.log(req.body);
+	//console.log(req.body);
 
 	//TODO adding validation if client_id already exists
 
 	User.findOne({'username' : user.username},'username',function(err,username){
-
-
-		console.log("test");
-
 		if(username){
 			res.json({
 				message: "User already exists",
@@ -34,9 +35,7 @@ exports.newUser = function(req,res){
 			});
 			return;
 		}
-
 		user.save(function(err){
-
 			if(err){
 				res.send(err);
 				console.log(err);
@@ -47,6 +46,7 @@ exports.newUser = function(req,res){
 				data: user
 			});
 			console.log("new user generated");
+			console.log(user);
 			return;
 		});
 	});
@@ -79,10 +79,8 @@ exports.changeUser = function(req,res){
 
 }
 
-//generating new secret and client_id and saving it in the DB
+//generating new secret and saving it in the DB
 exports.newSecret = function(req,res){
-
-	//TODO adding validation if client_id already exists
 
 	var new_secret = keygen.generateKey('24');
 
@@ -119,13 +117,13 @@ passport.use('api_basic', new Strategy(
 		User.findOne({'username': username},function(err, username){
 
 			if (err){
-				console.log(err + "1");
+				console.log(err);
 				return cb(err);
 			} 
 
 	      // No user found with that username
 	      	if (!username) {
-	      		console.log(err + "2");
+	      		console.log(err);
 	      		return cb(null, false);
 	      	}
 
