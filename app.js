@@ -6,13 +6,22 @@ var logger = require('morgan');
 var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var passport = require('passport');
 
 // Import controllers
 var projectController = require('./controllers/project');
+
+
+//test new User controller
+var userController = require('./controllers/user');
+
 var blogPostController = require('./controllers/blogPost');
 
 // Create express application
 var app = express();
+
+//initialize passport
+app.use(passport.initialize());
 
 // Connect to the CMS MongoDB
 console.log(app.settings.env);
@@ -21,7 +30,6 @@ if (process.env.NODE_ENV === 'test') {
 	mongoURI = 'mongodb://localhost:27017/cms-testing';
 }
 mongoose.connect(mongoURI);
-
 
 
 // Setup view engine
@@ -50,6 +58,7 @@ apiRouter.route('/projects/:project_id')
 	.get(projectController.getProject)
 	.put(projectController.putProject)
 	.delete(projectController.deleteProject);
+
 	
 // Endpoint handlers for /blogposts
 apiRouter.route('/blogposts')
@@ -63,6 +72,7 @@ apiRouter.route('/blogposts/:blogpost_id')
 	.delete(blogPostController.deleteBlogPost);
 
 // Endpoint handler for /
+
 interfaceRouter.get('/', function(req, res) {
 	res.render('index', { title: 'Portfolio CMS' });
 });
