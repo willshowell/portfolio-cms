@@ -12,13 +12,16 @@ var passport = require('passport');
 var projectController = require('./controllers/project');
 
 
-//test new User controller
+//new User controller
 var userController = require('./controllers/user');
+
 
 var blogPostController = require('./controllers/blogPost');
 
+
 // Create express application
 var app = express();
+
 
 //initialize passport
 app.use(passport.initialize());
@@ -30,6 +33,7 @@ if (process.env.NODE_ENV === 'test') {
 	mongoURI = 'mongodb://localhost:27017/cms-testing';
 }
 mongoose.connect(mongoURI);
+
 
 
 // Setup view engine
