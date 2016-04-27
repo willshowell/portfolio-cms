@@ -1,42 +1,45 @@
-
 // Import models
 var User = require('../models/user');
 
-//middleware for auth.
-//for usage check https://passportjs.org
+// Import packages
 var passport = require('passport');
 var Strategy = require('passport-http').BasicStrategy;
-
-//random key generator
 var keygen = require("generate-key");
 
-//creating new users
-exports.newUser = function(req,res){
-	//console.log("function called");
-	var user = new User();
-	var secret = keygen.generateKey('24');
+var secretLength = 24;
 
+// Create new users
+exports.newUser = function(req,res) {
+	
+	// Generate new user object
+	var user = new User();
+	
+	// Generate new secret for the user
+	var secret = keygen.generateKey(secretLength);
+
+	// Set object properties
 	user.username = req.body.username;
 	user.password = req.body.password;
 	user.secret = secret;
-	if(req.body.email){
+	if (req.body.email){
 		user.email = req.body.email;
 	}
-
-	//console.log(req.body);
-
-	//TODO adding validation if client_id already exists
-
-	User.findOne({'username' : user.username},'username',function(err,username){
-		if(username){
+	
+	// Save the new user to the database
+	User.findOne({'username' : user.username}, 'username', function(err, username){
+		
+		// Return if user already exists
+		if (username) {
 			res.json({
 				message: "User already exists",
 				data: null
 			});
 			return;
 		}
-		user.save(function(err){
-			if(err){
+		
+		// Otherwise, save
+		user.save(function(err) {
+			if (err) {
 				res.send(err);
 				console.log(err);
 				return;
@@ -45,55 +48,51 @@ exports.newUser = function(req,res){
 				message: "User created",
 				data: user
 			});
-			console.log("new user generated");
-			console.log(user);
 			return;
 		});
 	});
-	
-	
 }
 
+// Update user data
+exports.updateUser = function(req,res) {
 
-
-//changing user data
-exports.changeUser = function(req,res){
-
-	User.update({'username' : req.body.username}, { $set: {
+	User.update({'username' : req.body.username}, { 
+		$set: {
 			username : req.body.username,
 			password : req.body.password,
 			secret : req.body.secret,
 		}
-	}, function(err){
-		if(err){
+	}, function(err) {
+		if (err) {
 			res.send(err);
 			console.log(err);
 			return;
 		}
 		res.json({
 			message: "User Changed",
+			data: user
 		});
-		console.log("user changed");
 		return;
 	});
-
 }
 
-//generating new secret and saving it in the DB
-exports.newSecret = function(req,res){
+// Generate a new secret for a user
+exports.newSecret = function(req,res) {
 
-	var new_secret = keygen.generateKey('24');
+	var new_secret = keygen.generateKey(secretLength);
 
-	User.update({'username' : req.body.username}, { $set: {
-		'secret' : new_secret
-	}},function(err){
-		if(err){
+	User.update({'username' : req.body.username}, {
+		$set: {
+			'secret' : new_secret
+		}
+	}, function(err) {
+		if (err) {
 			res.send(err);
 			console.log(err);
 			return;
 		}
 		res.json({
-			message: "New Secret and Client_ID stored",
+			message: "New secret generated",
 			data: {
 				secret: new_secret
 			}
@@ -101,82 +100,70 @@ exports.newSecret = function(req,res){
 	});
 }
 
-//verify API Access
-exports.apiAuthenticated = passport.authenticate('api_basic', { session : false });
+// Verify API Access
+exports.apiAuthenticated = passport.authenticate('api', { session : false });
 
-//verify Interface Access
-exports.interAuthenticated = passport.authenticate('interface', {session: false});
+// Verify Application Access
+exports.applicationAuthenticated = passport.authenticate('application', { session : true });
 
+// Passport authentication for the API 
+passport.use('api', new Strategy(function(username, secret, cb) {
 
-//Passport functions
+	User.findOne({'username': username}, function(err, username) {
 
-//passport for api 
-passport.use('api_basic', new Strategy(
-	function(username, secret, cb){
+		if (err) {
+			console.log(err);
+			return cb(err);
+		} 
 
-		User.findOne({'username': username},function(err, username){
+    // No user found with that username
+  	if (!username) {
+  		console.log(err);
+  		return cb(null, false);
+  	}
 
-			if (err){
-				console.log(err);
-				return cb(err);
-			} 
+    // Make sure the secret matches the user
+    username.verifySecret(secret, function(isMatch) {
 
-	      // No user found with that username
-	      	if (!username) {
-	      		console.log(err);
-	      		return cb(null, false);
-	      	}
+      // Password did not match
+      if (!isMatch) { 
+      	return cb(null, false); 
+      }
 
-	      // Make sure the secret is correct
-	      username.verifySecret(secret, function(isMatch) {
-	        console.log("secret");
+      // Success
+      return cb(null, username);
+  	});
+	});
+}));
 
-	        // Password did not match
-	        if (!isMatch) { return cb(null, false); }
+// Passport authentication for the application
+passport.use('application', new Strategy(function(username, password, cb) {
+	
+	User.findOne({'username': username}, function(err, username) {
 
-	        // Success
-	        return cb(null, username);
-      		});
-		})
-	}
-));
+		if (err) {
+			console.log(err);
+			return cb(err);
+		}
 
-//passport for interface 
-passport.use('interface', new Strategy(
-	function(username, password, cb){
-		User.findOne({'username': username},function(err, username){
-			if (err){
-				console.log(err);
+		// No user found with that username
+		if (!username) {
+			console.log(err);
+			return cb(null, false);
+		}
+
+		// Make sure password is correct
+		username.verifyPassword(password, function(err, isMatch){
+			
+			if (err) {
 				return cb(err);
 			}
 
-			//No User found
-			if(!username){
-				console.log(err);
-				return cb(null,false);
-			}
+			// Password doesnt match
+			if(!isMatch) return cb(null,false);
 
-			//Make sure password is correct
-			username.verifyPassword(password, function(err,isMatch){
-				
-				if(err) return cb(err);
-
-				//password doesnt match
-				if(!isMatch) return cb(null,false);
-
-				//Success
-				return cb(null, username);
-
-			})
-		})
-	}))
-
-
-
-
-
-
-
-
-
-
+			// Success
+			return cb(null, username);
+		});
+	});
+}));
