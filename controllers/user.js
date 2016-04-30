@@ -18,7 +18,7 @@ exports.newUser = function(req,res) {
 	var secret = keygen.generateKey(secretLength);
 
 	// Set object properties
-	user.username = req.body.username;
+	user._id = req.body.username;
 	user.password = req.body.password;
 	user.secret = secret;
 	if (req.body.email){
@@ -26,10 +26,10 @@ exports.newUser = function(req,res) {
 	}
 	
 	// Save the new user to the database
-	User.findOne({'username' : user.username}, 'username', function(err, username){
+	User.findById(user._id, function(err, existingUser) {
 		
 		// Return if user already exists
-		if (username) {
+		if (existingUser) {
 			res.json({
 				message: "User already exists",
 				data: null
@@ -101,10 +101,14 @@ exports.newSecret = function(req,res) {
 }
 
 // Verify API Access
-exports.apiAuthenticated = passport.authenticate('api', { session : false });
+exports.apiAuthenticated = passport.authenticate('api', {
+	session : false
+});
 
 // Verify Application Access
-exports.applicationAuthenticated = passport.authenticate('application', { session : true });
+exports.applicationAuthenticated = passport.authenticate('application', {
+	session : true
+});
 
 // Passport authentication for the API 
 passport.use('api', new Strategy(function(username, secret, cb) {
@@ -139,7 +143,7 @@ passport.use('api', new Strategy(function(username, secret, cb) {
 // Passport authentication for the application
 passport.use('application', new Strategy(function(username, password, cb) {
 	
-	User.findOne({'username': username}, function(err, username) {
+	User.findById(username, function(err, user) {
 
 		if (err) {
 			console.log(err);
@@ -147,13 +151,13 @@ passport.use('application', new Strategy(function(username, password, cb) {
 		}
 
 		// No user found with that username
-		if (!username) {
+		if (!user) {
 			console.log(err);
 			return cb(null, false);
 		}
 
 		// Make sure password is correct
-		username.verifyPassword(password, function(err, isMatch){
+		user.verifyPassword(password, function(err, isMatch){
 			
 			if (err) {
 				return cb(err);

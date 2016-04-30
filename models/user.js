@@ -2,12 +2,14 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
 
+// Import other models
+var Project = require('./project');
+var BlogPost = require('./blogPost');
+
 // User schema
 var UserSchema = new mongoose.Schema({
-	username: {
-		type: String,
-		unique: true,
-		required: true
+	_id: {
+		type: String
 	},
 	password: {
 		type: String,
@@ -20,8 +22,21 @@ var UserSchema = new mongoose.Schema({
 	email: {
 		type: String,
 		required: false // TODO maybe make req'd for password reset functionality
-	}
+	},
+	projects: [{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Project'
+	}],
+	blogposts: [{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'BlogPost'
+	}]
 });
+
+// Make 'username' field a virtual field for the _id
+/*UserSchema.virtual('username').get(function() {
+	return this._id;
+});*/
 
 // This is called before each user.save()
 UserSchema.pre('save', function(cb) {
