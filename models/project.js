@@ -1,8 +1,15 @@
 // Import packages
 var mongoose = require('mongoose');
 
+// Import other models
+var User = require('./user');
+
 // Define project schema
 var ProjectSchema = new mongoose.Schema({
+	_user: {
+		type: String,
+		ref: 'User'
+	},
 	name: String,
 	tagline: String,
 	hero_url: String,

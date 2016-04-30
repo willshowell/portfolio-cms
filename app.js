@@ -13,6 +13,9 @@ var userController = require('./controllers/user');
 var projectController = require('./controllers/project');
 var blogPostController = require('./controllers/blogPost');
 
+// Import models
+var User = require('./models/user');
+
 // Create express application
 var app = express();
 
@@ -47,6 +50,79 @@ var applicationRouter = express.Router();
 /* 
  * API Routes
 */
+// Middleware substack for authenticating users
+apiRouter.use('/:username', function(req, res, next) {
+
+	// Check that the user provided the correct secret
+	var providedSecret;
+	if (req.method == 'GET') {
+		providedSecret = req.query.secret;
+	} else {
+		providedSecret = req.body.secret;
+	}
+
+	if (!providedSecret) {
+		res.json({
+			message: "Secret not provided. Unable to authenticate."
+		});
+	} else {
+		User.findById(req.params.username, function(err, user) {
+			if(err) {
+				next(err);
+			}
+			if(user) {
+				user.verifySecret(providedSecret, function(isMatch) {
+					if (!isMatch) {
+						console.log("Should be " + user.secret);
+						res.json({
+							message: "Wrong secret provided. Unable to authenticate"
+						});
+					} else {
+				 	next();	
+					}
+				});
+			} else {
+				res.json({
+					message: "User does not exist."
+				});
+			}
+		});
+	}
+});
+// Middleware substack for verifying user access to project
+apiRouter.use('/:username/projects/:project_id', function(req, res, next) {
+	console.log(req.params.username+" is asking for "+req.params.project_id);
+	User.findById(req.params.username, function(err, user) {
+		if(err) {
+			next(err);
+		}
+		var projectIndex = user.projects.indexOf(req.params.project_id);
+		console.log(projectIndex);
+		if (projectIndex == -1) {
+			res.json({
+				message: "Project does not belong to you"
+			});
+		} else {
+			next();
+		}
+	});
+});
+// Middleware substack for verifying user access to blogpost
+apiRouter.use('/:username/blogposts/:blogpost_id', function(req, res, next) {
+	User.findById(req.params.username, function(err, user) {
+		if(err) {
+			next(err);
+		}
+		var blogpostIndex = user.blogposts.indexOf(req.params.blogpost_id);
+		if (blogpostIndex == -1) {
+			res.json({
+				message: "Blogpost does not belong to you"
+			});
+		} else {
+			next();
+		}
+	});
+});
 // Endpoint handlers for /projects
 apiRouter.route('/:username/projects')
 	.post(projectController.postProjects)
@@ -59,12 +135,12 @@ apiRouter.route('/:username/projects/:project_id')
 	.delete(projectController.deleteProject);
 
 // Endpoint handlers for /blogposts
-apiRouter.route('/blogposts')
+apiRouter.route('/:username/blogposts')
 	.post(blogPostController.postBlogPosts)
 	.get(blogPostController.getBlogPosts)
 
 // Endpoint handlers for /blogposts/:blogpost_id
-apiRouter.route('/blogposts/:blogpost_id')
+apiRouter.route('/:username/blogposts/:blogpost_id')
 	.get(blogPostController.getBlogPost)
 	.put(blogPostController.putBlogPost)
 	.delete(blogPostController.deleteBlogPost);
@@ -72,6 +148,7 @@ apiRouter.route('/blogposts/:blogpost_id')
 /* 
  * Application Routes 
 */
+// TODO user middleware for authenticated session of logged in users
 // Endpoint handler for /
 applicationRouter.get('/', function(req, res) {
 	// TODO redirect to /:username or /:login depending on session
@@ -84,9 +161,11 @@ applicationRouter.get('/login', function(req, res) {
 });
 
 // Endpoint handler for /signup
-applicationRouter.get('/signup', function(req, res) {
-	res.send('This is where you will sign up');
-});
+applicationRouter.route('/signup')
+	.post(userController.newUser)
+	.get(function(req, res) {
+		res.send('This is where you will sign up');
+	});
 
 // Endpoint handler for /:username
 applicationRouter.get('/:username', function(req, res) {
@@ -111,6 +190,7 @@ applicationRouter.get('/:username/projects/new', function(req, res) {
 applicationRouter.get('/:username/projects/:id', function(req, res) {
 	res.send('Project: ' + req.params.id);
 });
+
 
 // Register all the routes (api routes start with /api/v1/)
 app.use('/api/v1', apiRouter);

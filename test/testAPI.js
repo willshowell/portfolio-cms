@@ -10,8 +10,9 @@ var should = chai.should();
 var server = require('../app');
 
 // Import models
-var BlogPost = require('../models/blogPost');
+var User = require('../models/user');
 var Project = require('../models/project');
+var BlogPost = require('../models/blogPost');
 
 chai.use(chaiHttp);
 
@@ -26,8 +27,11 @@ describe('Projects', function() {
 		done();
 	});
 	
-	// Instantiate the database with a dummy project before each test
+	// Instantiate the database with a dummy user and project before each test
 	beforeEach(function(done) {
+		var newUser = User({
+			username: "user1"
+		});
 		var newProject = Project({
 			name: "My first project",
 			tagline: "It does a thing",
@@ -40,9 +44,13 @@ describe('Projects', function() {
 				"http://myupload.com/project2a.jpg"
 			]
 		});
-		newProject.save(function(err) {
-			done();
-		});		
+		
+		newUser.projects.push(newProject)
+		newUser.save(function(err) {
+			newProject.save(function(err) {
+				done();
+			});
+		});
 	});
 	
 	// Clear the database after each test
@@ -53,7 +61,7 @@ describe('Projects', function() {
 	
 	it('should list all projects on /projects GET', function(done) {
 		chai.request(server)
-			.get(baseRoute + '/projects')
+			.get(baseRoute + '/user1/projects')
 			.end(function(err, res) {
 				
 				// Test that returned object is correct

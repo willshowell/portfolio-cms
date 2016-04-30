@@ -2,7 +2,11 @@
 var mongoose = require('mongoose');
 
 // Define project schema
-var BlogSchema = new mongoose.Schema({
+var BlogPostSchema = new mongoose.Schema({
+	_user: { 
+		type: String,
+		ref: 'User'
+	 },
 	title: String,
 	text: String
 },
@@ -14,4 +18,4 @@ var BlogSchema = new mongoose.Schema({
 });
 
 // Export the model
-module.exports = mongoose.model('Blog', BlogSchema);
+module.exports = mongoose.model('BlogPost', BlogPostSchema);
