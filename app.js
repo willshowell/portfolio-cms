@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
+var exphbs = require('express-handlebars');
 
 // Import controllers
 var userController = require('./controllers/user');
@@ -31,9 +32,17 @@ if (process.env.NODE_ENV === 'test') {
 }
 mongoose.connect(mongoURI);
 
+var hbs = exphbs.create({
+	defaultLayout: 'main',
+	partialsDir: [
+		'views/partials/'
+	]
+});
+
 // Setup view engine
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
 
 // Uncomment this line when favicon is in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -152,42 +161,50 @@ apiRouter.route('/:username/blogposts/:blogpost_id')
 // Endpoint handler for /
 applicationRouter.get('/', function(req, res) {
 	// TODO redirect to /:username or /:login depending on session
-	res.render('index', { title: 'Portfolio CMS' });
+	res.render('home');
 });
 
 // Endpoint handler for /login
 applicationRouter.get('/login', function(req, res) {
-	res.send('This is where you will log in');
+	res.render('login', {
+		hideNav: true
+	});
 });
 
 // Endpoint handler for /signup
 applicationRouter.route('/signup')
 	.post(userController.newUser)
 	.get(function(req, res) {
-		res.send('This is where you will sign up');
+		res.render('signup', {
+			hideNav: true
+		});
 	});
 
 // Endpoint handler for /:username
-applicationRouter.get('/:username', function(req, res) {
-	res.send('Your username is ' + req.params.username);
+applicationRouter.get('/', function(req, res) {
+	res.render('user', {
+		username: req.params.username
+	});
 });
 
 // Endpoint handler for /:username/settings
-applicationRouter.get('/:username/settings', function(req, res) {
-	res.send('Here are ' + req.params.username + '\'s settings');
+applicationRouter.get('/settings', function(req, res) {
+	res.render('settings', {
+		username: req.params.username
+	});
 });
 
 // Endpoint handler for /:username/projects
-applicationRouter.get('/:username/projects', function(req, res) {
+applicationRouter.get('/projects', function(req, res) {
 	res.send('Your username is ' + req.params.username + ' and here are your projects');
 });
 
 // Endpoint handler for /:username/projects/new
-applicationRouter.get('/:username/projects/new', function(req, res) {
+applicationRouter.get('/projects/new', function(req, res) {
 	res.send('Making a new project');
 });
 
-applicationRouter.get('/:username/projects/:id', function(req, res) {
+applicationRouter.get('/projects/:id', function(req, res) {
 	res.send('Project: ' + req.params.id);
 });
 
@@ -195,6 +212,8 @@ applicationRouter.get('/:username/projects/:id', function(req, res) {
 // Register all the routes (api routes start with /api/v1/)
 app.use('/api/v1', apiRouter);
 app.use('/', applicationRouter);
+
+app.use(express.static('public'));
 
 // Catch 404 and forward to error handler
 app.use(function(req, res, next) {
