@@ -97,7 +97,7 @@ app.use(passport.session());
 
 // Define routers for express
 var apiRouter = express.Router();
-var applicationRouter = express.Router();
+var appRouter = express.Router();
 
 /* 
  * API Routes
@@ -198,32 +198,27 @@ apiRouter.route('/:username/blogposts/:blogpost_id')
 	.delete(blogPostController.deleteBlogPost);
 
 /* 
- * Application Routes 
+ * App Routes 
 */
-// TODO user middleware for authenticated session of logged in users
-// Endpoint handler for /
-
 // Endpoint handlers for /login
-applicationRouter.post('/login',
-	passport.authenticate('local', {
-		successReturnToOrRedirect: '/',
-		failureRedirect: '/login'
-	}),
-	function(req, res) {
-		console.log(req.user._id);
-		res.redirect('/');
-	}
-);
-applicationRouter.get('/login',
-	function(req, res) {
+appRouter.route('/login')
+	.post(
+		passport.authenticate('local', {
+			successReturnToOrRedirect: '/',
+			failureRedirect: '/login'
+		}), function(req, res) {
+			console.log(req.user._id);
+			res.redirect('/');
+		}
+	)
+	.get(function(req, res) {
 		res.render('login', {
 			hideNav: true
 		});
-	}
-);
+	});
 
 // Endpoint handlers for /logout
-applicationRouter.get('/logout',
+appRouter.get('/logout',
 	function(req, res) {
 		req.logout();
 		res.redirect('/');
@@ -231,7 +226,7 @@ applicationRouter.get('/logout',
 );
 
 // Endpoint handler for /signup
-applicationRouter.route('/signup')
+appRouter.route('/signup')
 	.post(userController.newUser)
 	.get(function(req, res) {
 		res.render('signup', {
@@ -240,7 +235,7 @@ applicationRouter.route('/signup')
 	});
 
 // User homepage
-applicationRouter.get('/',
+appRouter.get('/',
 	login.ensureLoggedIn('/login'),
 	function(req, res) {
 		res.render('user', {
@@ -249,7 +244,7 @@ applicationRouter.get('/',
 	});
 
 // Endpoint handler for /settings
-applicationRouter.get('/settings',
+appRouter.get('/settings',
 	login.ensureLoggedIn('/login'),
 	function(req, res) {
 		res.render('settings', {
@@ -258,32 +253,74 @@ applicationRouter.get('/settings',
 	});
 
 // Endpoint handler for /projects
-applicationRouter.get('/projects',
+appRouter.get('/projects',
 	login.ensureLoggedIn('/login'),
 	function(req, res) {
-		login.ensureLoggedIn('/login'),
-		res.send('Your username is ' + req.user._id+ ' and here are your projects');
+		res.render('projects', {
+			user: req.user
+		});
 	});
 
 // Endpoint handlers for /projects/new
-applicationRouter.get('/projects/new', function(req, res) {
-	res.send('Making a new project');
-});
-applicationRouter.post('/projects/new', function(req, res) {
-	res.redirect('/projects/new');
-});
+appRouter.route('/projects/new')
+	.get(
+		login.ensureLoggedIn('/login'),
+		function(req, res) {
+			res.send('Making a new project');
+		})
+	.post(
+		login.ensureLoggedIn('/login'),
+		function(req, res) {
+			res.redirect('/projects/new'); //TODO generate new project
+		});
 
 // Endpoint handler for a specific project
-applicationRouter.get('/projects/:id', function(req, res) {
-	res.send('Project: ' + req.params.id);
-});
+appRouter.get('/projects/:id',
+	login.ensureLoggedIn('/login'),
+ 	function(req, res) {
+		res.send('Project: ' + req.params.id);
+	}); // TODO add edit capabilities
 
 
 
-// Register all the routes (api routes start with /api/v1/)
+
+// Endpoint handler for /blogposts
+appRouter.get('/blogposts',
+	login.ensureLoggedIn('/login'),
+	function(req, res) {
+		res.render('blogposts', {
+			user: req.user
+		});
+	});
+
+// Endpoint handlers for /blogposts/new
+appRouter.route('/blogposts/new')
+	.get(
+		login.ensureLoggedIn('/login'),
+		function(req, res) {
+			res.send('Making a new blogpost');
+		})
+	.post(
+		login.ensureLoggedIn('/login'),
+		function(req, res) {
+			res.redirect('/blogposts/new'); //TODO generate new blogpost
+		});
+
+// Endpoint handler for a specific project
+appRouter.get('/blogposts/:id',
+	login.ensureLoggedIn('/login'),
+ 	function(req, res) {
+		res.send('Blog Post: ' + req.params.id);
+	}); // TODO add edit capabilities
+
+
+
+
+
+
+// Register the routes and assets directory
 app.use('/api/v1', apiRouter);
-app.use('/', applicationRouter);
-
+app.use('/', appRouter);
 app.use(express.static('public'));
 
 // Catch 404 and forward to error handler
