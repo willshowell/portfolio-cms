@@ -7,7 +7,10 @@ var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
 var exphbs = require('express-handlebars');
+var Session = require('express-session');
+var login = require('connect-ensure-login');
 
 // Import controllers
 var userController = require('./controllers/user');
@@ -17,11 +20,53 @@ var blogPostController = require('./controllers/blogPost');
 // Import models
 var User = require('./models/user');
 
+
+// Configure local strategy for use by passport
+passport.use(new LocalStrategy(
+	function(username, password, done) {
+		User.findById(username, function(err, user) {
+			if (err) { return done(err); }
+			if (!user) {
+				console.log('no user found :(');
+				return done(null, false, { message: 'Incorrect' });
+			}
+			user.verifyPassword(password, function(err, isMatch) {
+				if (err) { return done(err); }
+				if (!isMatch) {
+					console.log('wrong password bro');
+					return done(null, false, { message: 'Incorrect' });
+				}
+				return done(null, user);
+			});
+		});
+	}
+));	
+
+// TODO serialize and deserialize
+passport.serializeUser(function(user, cb) {
+	cb(null, user._id);
+});
+
+passport.deserializeUser(function(id, cb) {
+	User.findById(id, function(err, user) {
+		if (err) { return cb(err); }
+		cb(null, user);
+	});
+});
+
 // Create express application
 var app = express();
 
-// Initialize passport
-app.use(passport.initialize());
+// Configure view engine to render with handlebars
+var hbs = exphbs.create({
+	defaultLayout: 'main',
+	partialsDir: [
+		'views/partials/'
+	]
+});
+app.set('views', path.join(__dirname, 'views'));
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
 
 // Connect to the CMS MongoDB
 // (switch to an alternate DB when testing)
@@ -32,34 +77,32 @@ if (process.env.NODE_ENV === 'test') {
 }
 mongoose.connect(mongoURI);
 
-var hbs = exphbs.create({
-	defaultLayout: 'main',
-	partialsDir: [
-		'views/partials/'
-	]
-});
-
-// Setup view engine
-app.set('views', path.join(__dirname, 'views'));
-app.engine('handlebars', hbs.engine);
-app.set('view engine', 'handlebars');
 
 // Uncomment this line when favicon is in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(Session({ 
+	secret: 'racketeering',
+	resave: false,
+	saveUninitialized: false 
+}));
 
-// Create routers for express
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Define routers for express
 var apiRouter = express.Router();
 var applicationRouter = express.Router();
 
 /* 
  * API Routes
 */
-// Middleware substack for authenticating users
+// Custom middleware substack for authenticating users
 apiRouter.use('/:username', function(req, res, next) {
 
 	// Check that the user provided the correct secret
@@ -159,17 +202,33 @@ apiRouter.route('/:username/blogposts/:blogpost_id')
 */
 // TODO user middleware for authenticated session of logged in users
 // Endpoint handler for /
-applicationRouter.get('/', function(req, res) {
-	// TODO redirect to /:username or /:login depending on session
-	res.render('home');
-});
 
-// Endpoint handler for /login
-applicationRouter.get('/login', function(req, res) {
-	res.render('login', {
-		hideNav: true
-	});
-});
+// Endpoint handlers for /login
+applicationRouter.post('/login',
+	passport.authenticate('local', {
+		successReturnToOrRedirect: '/',
+		failureRedirect: '/login'
+	}),
+	function(req, res) {
+		console.log(req.user._id);
+		res.redirect('/');
+	}
+);
+applicationRouter.get('/login',
+	function(req, res) {
+		res.render('login', {
+			hideNav: true
+		});
+	}
+);
+
+// Endpoint handlers for /logout
+applicationRouter.get('/logout',
+	function(req, res) {
+		req.logout();
+		res.redirect('/');
+	}
+);
 
 // Endpoint handler for /signup
 applicationRouter.route('/signup')
@@ -180,33 +239,45 @@ applicationRouter.route('/signup')
 		});
 	});
 
-// Endpoint handler for /:username
-applicationRouter.get('/', function(req, res) {
-	res.render('user', {
-		username: req.params.username
+// User homepage
+applicationRouter.get('/',
+	login.ensureLoggedIn('/login'),
+	function(req, res) {
+		res.render('user', {
+			user: req.user
+		});
 	});
-});
 
-// Endpoint handler for /:username/settings
-applicationRouter.get('/settings', function(req, res) {
-	res.render('settings', {
-		username: req.params.username
+// Endpoint handler for /settings
+applicationRouter.get('/settings',
+	login.ensureLoggedIn('/login'),
+	function(req, res) {
+		res.render('settings', {
+			username: req.user._id
+		});
 	});
-});
 
-// Endpoint handler for /:username/projects
-applicationRouter.get('/projects', function(req, res) {
-	res.send('Your username is ' + req.params.username + ' and here are your projects');
-});
+// Endpoint handler for /projects
+applicationRouter.get('/projects',
+	login.ensureLoggedIn('/login'),
+	function(req, res) {
+		login.ensureLoggedIn('/login'),
+		res.send('Your username is ' + req.user._id+ ' and here are your projects');
+	});
 
-// Endpoint handler for /:username/projects/new
+// Endpoint handlers for /projects/new
 applicationRouter.get('/projects/new', function(req, res) {
 	res.send('Making a new project');
 });
+applicationRouter.post('/projects/new', function(req, res) {
+	res.redirect('/projects/new');
+});
 
+// Endpoint handler for a specific project
 applicationRouter.get('/projects/:id', function(req, res) {
 	res.send('Project: ' + req.params.id);
 });
+
 
 
 // Register all the routes (api routes start with /api/v1/)
