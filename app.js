@@ -7,52 +7,18 @@ var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
 var exphbs = require('express-handlebars');
 var Session = require('express-session');
 var login = require('connect-ensure-login');
 
 // Import controllers
+var auth = require('./controllers/auth');
 var userController = require('./controllers/user');
 var projectController = require('./controllers/project');
 var blogPostController = require('./controllers/blogPost');
 
 // Import models
 var User = require('./models/user');
-
-
-// Configure local strategy for use by passport
-passport.use(new LocalStrategy(
-	function(username, password, done) {
-		User.findById(username, function(err, user) {
-			if (err) { return done(err); }
-			if (!user) {
-				console.log('no user found :(');
-				return done(null, false, { message: 'Incorrect' });
-			}
-			user.verifyPassword(password, function(err, isMatch) {
-				if (err) { return done(err); }
-				if (!isMatch) {
-					console.log('wrong password bro');
-					return done(null, false, { message: 'Incorrect' });
-				}
-				return done(null, user);
-			});
-		});
-	}
-));	
-
-// TODO serialize and deserialize
-passport.serializeUser(function(user, cb) {
-	cb(null, user._id);
-});
-
-passport.deserializeUser(function(id, cb) {
-	User.findById(id, function(err, user) {
-		if (err) { return cb(err); }
-		cb(null, user);
-	});
-});
 
 // Create express application
 var app = express();
@@ -102,45 +68,6 @@ var appRouter = express.Router();
 /* 
  * API Routes
 */
-// Custom middleware substack for authenticating users
-apiRouter.use('/:username', function(req, res, next) {
-
-	// Check that the user provided the correct secret
-	var providedSecret;
-	if (req.method == 'GET') {
-		providedSecret = req.query.secret;
-	} else {
-		providedSecret = req.body.secret;
-	}
-
-	if (!providedSecret) {
-		res.json({
-			message: "Secret not provided. Unable to authenticate."
-		});
-	} else {
-		User.findById(req.params.username, function(err, user) {
-			if(err) {
-				next(err);
-			}
-			if(user) {
-				user.verifySecret(providedSecret, function(isMatch) {
-					if (!isMatch) {
-						console.log("Should be " + user.secret);
-						res.json({
-							message: "Wrong secret provided. Unable to authenticate"
-						});
-					} else {
-				 	next();	
-					}
-				});
-			} else {
-				res.json({
-					message: "User does not exist."
-				});
-			}
-		});
-	}
-});
 // Middleware substack for verifying user access to project
 apiRouter.use('/:username/projects/:project_id', function(req, res, next) {
 	console.log(req.params.username+" is asking for "+req.params.project_id);
@@ -175,10 +102,11 @@ apiRouter.use('/:username/blogposts/:blogpost_id', function(req, res, next) {
 		}
 	});
 });
+
 // Endpoint handlers for /projects
 apiRouter.route('/:username/projects')
-	.post(projectController.postProjects)
-	.get(projectController.getProjects);
+	.post(auth.apiAuthenticated, projectController.postProjects)
+	.get(auth.apiAuthenticated, projectController.getProjects);
 
 // Endpoint handlers for /projects/:project_id
 apiRouter.route('/:username/projects/:project_id')
@@ -203,10 +131,8 @@ apiRouter.route('/:username/blogposts/:blogpost_id')
 // Endpoint handlers for /login
 appRouter.route('/login')
 	.post(
-		passport.authenticate('local', {
-			successReturnToOrRedirect: '/',
-			failureRedirect: '/login'
-		}), function(req, res) {
+		auth.appAuthenticated,
+		function(req, res) {
 			console.log(req.user._id);
 			res.redirect('/');
 		}

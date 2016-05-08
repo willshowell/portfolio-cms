@@ -140,34 +140,8 @@ passport.use('api', new Strategy(function(username, secret, cb) {
 	});
 }));
 
-// Passport authentication for the application
-passport.use('application', new Strategy(function(username, password, cb) {
-	
-	User.findById(username, function(err, user) {
 
-		if (err) {
-			console.log(err);
-			return cb(err);
-		}
 
-		// No user found with that username
-		if (!user) {
-			console.log(err);
-			return cb(null, false);
-		}
 
-		// Make sure password is correct
-		user.verifyPassword(password, function(err, isMatch){
-			
-			if (err) {
-				return cb(err);
-			}
 
-			// Password doesnt match
-			if(!isMatch) return cb(null,false);
 
-			// Success
-			return cb(null, username);
-		});
-	});
-}));
