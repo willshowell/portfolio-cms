@@ -95,7 +95,7 @@ exports.getProjects = function(req, res) {
 	});
 };
 
-// Endpoint for GET /api/v1/:username/projects/:project_id
+// Endpoint for GET /api/v1/:username/projects/:id
 exports.getProject = function(req, res) {
 
 	// Get the user
@@ -106,7 +106,7 @@ exports.getProject = function(req, res) {
 		}
 
 		// Find the specified project
-		Project.findById(req.params.project_id, function(err, project) {
+		Project.findById(req.params.id, function(err, project) {
 			if (err) {
 				res.send(err);
 			} else {
@@ -116,14 +116,14 @@ exports.getProject = function(req, res) {
 	});
 };
 
-// Endpoint for PUT /api/v1/:username/projects/:project_id
+// Endpoint for PUT /api/v1/:username/projects/:id
 exports.putProject = function(req, res) {
 
 	// Get the user
 	User.findById(req.params.username, function(err, user) {
 
 		// Find the specified project
-		Project.findById(req.params.project_id, function(err, project) {
+		Project.findById(req.params.id, function(err, project) {
 			if(err) {
 				res.send(err);
 			} else {
@@ -151,14 +151,14 @@ exports.putProject = function(req, res) {
 	});
 };
 
-// Endpoint for DELETE /api/v1/:username/projects/:project_id
+// Endpoint for DELETE /api/v1/:username/projects/:id
 exports.deleteProject = function(req, res) {
 
 	// Get the user
 	User.findById(req.params.username, function(err, user) {
 
 		// Find the specified project and remove it
-		Project.findByIdAndRemove(req.params.project_id, function(err) {
+		Project.findByIdAndRemove(req.params.id, function(err) {
 			if(err) {
 				res.send(err);
 			} else {

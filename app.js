@@ -68,48 +68,18 @@ var appRouter = express.Router();
 /* 
  * API Routes
 */
-// Middleware substack for verifying user access to project
-apiRouter.use('/:username/projects/:project_id', function(req, res, next) {
-	console.log(req.params.username+" is asking for "+req.params.project_id);
-	User.findById(req.params.username, function(err, user) {
-		if(err) {
-			next(err);
-		}
-		var projectIndex = user.projects.indexOf(req.params.project_id);
-		console.log(projectIndex);
-		if (projectIndex == -1) {
-			res.json({
-				message: "Project does not belong to you"
-			});
-		} else {
-			next();
-		}
-	});
-});
-// Middleware substack for verifying user access to blogpost
-apiRouter.use('/:username/blogposts/:blogpost_id', function(req, res, next) {
-	User.findById(req.params.username, function(err, user) {
-		if(err) {
-			next(err);
-		}
-		var blogpostIndex = user.blogposts.indexOf(req.params.blogpost_id);
-		if (blogpostIndex == -1) {
-			res.json({
-				message: "Blogpost does not belong to you"
-			});
-		} else {
-			next();
-		}
-	});
-});
+// Ensure authentication to user content
+apiRouter.all('/:username/*', auth.apiAuthenticated);
+
+// Ensure user owns the content
+apiRouter.all('/:username/*/:id', auth.contentOwnership);
 
 // Endpoint handlers for /projects
 apiRouter.route('/:username/projects')
-	.post(auth.apiAuthenticated, projectController.postProjects)
-	.get(auth.apiAuthenticated, projectController.getProjects);
-
+	.post(projectController.postProjects)
+	.get(projectController.getProjects);
 // Endpoint handlers for /projects/:project_id
-apiRouter.route('/:username/projects/:project_id')
+apiRouter.route('/:username/projects/:id')
 	.get(projectController.getProject)
 	.put(projectController.putProject)
 	.delete(projectController.deleteProject);
@@ -118,9 +88,8 @@ apiRouter.route('/:username/projects/:project_id')
 apiRouter.route('/:username/blogposts')
 	.post(blogPostController.postBlogPosts)
 	.get(blogPostController.getBlogPosts)
-
 // Endpoint handlers for /blogposts/:blogpost_id
-apiRouter.route('/:username/blogposts/:blogpost_id')
+apiRouter.route('/:username/blogposts/:id')
 	.get(blogPostController.getBlogPost)
 	.put(blogPostController.putBlogPost)
 	.delete(blogPostController.deleteBlogPost);

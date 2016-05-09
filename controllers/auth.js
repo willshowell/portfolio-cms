@@ -37,6 +37,7 @@ exports.appAuthenticated = passport.authenticate('local', {
 	failureRedirect: '/login'
 });
 
+// Make sure user properly provides their secret in their request
 exports.apiAuthenticated = function(req, res, next) {
 	// Find the secret
 	var providedSecret = req.body.secret || req.query.secret || null;
@@ -67,3 +68,28 @@ exports.apiAuthenticated = function(req, res, next) {
 		});	
 	});
 };
+
+exports.projectOwnership = function(req, res, next) {
+	var projectIndex = req.user.projects.indexOf(req.params.id);
+	if (projectIndex == -1) {
+		res.json({
+			message: "Project does not belong to you"
+		});
+		return;
+	}
+	next();
+}
+
+exports.contentOwnership = function(req, res, next) {
+	var contentIndex = req.user.projects.indexOf(req.params.id);
+	if (contentIndex == -1) {
+		contentIndex = req.user.blogposts.indexOf(req.params.id);
+	}
+	if (contentIndex == -1) {
+		res.json({
+			message: "Content does not belong to you"
+		});
+		return;
+	}
+	next();
+}

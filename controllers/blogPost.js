@@ -3,6 +3,7 @@ var deleteKey = require('key-del');
 
 // Import models
 var BlogPost = require('../models/blogPost');
+var User = require('../models/user');
 
 // Endpoint for POST /api/v1/:username/blogposts/
 exports.postBlogPosts = function(req, res) {
@@ -50,7 +51,7 @@ exports.getBlogPosts = function(req, res) {
 		var postList = user.blogposts;
 	
 		var filteredPosts = [];
-		var postsLeft = postList.lenght;
+		var postsLeft = postList.length;
 
 		// Respond if there are no blogposts
 		if (postsLeft == 0) {
