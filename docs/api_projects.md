@@ -1,7 +1,7 @@
 #### List projects
  
 ```http
-GET /api/v1/projects
+GET /api/v1/username/projects
 ```
 ```json
 [
@@ -22,7 +22,7 @@ GET /api/v1/projects
 	
 #### Get full project information
 ```http
-GET /api/v1/projects/570a6bb10fe400a43fbb572c
+GET /api/v1/username/projects/570a6bb10fe400a43fbb572c
 ```
 ```json
 {
@@ -45,7 +45,7 @@ GET /api/v1/projects/570a6bb10fe400a43fbb572c
 
 #### Create a new project
 ```http
-POST /api/v1/projects
+POST /api/v1/username/projects
 ```
 ```json
 HTTP/1.1 200 OK
@@ -57,7 +57,7 @@ HTTP/1.1 200 OK
 
 #### Edit a project
 ```http
-PUT /api/v1/projects/:project_id
+PUT /api/v1/username/projects/:project_id
 ```
 ```json
 {
@@ -68,7 +68,7 @@ PUT /api/v1/projects/:project_id
 	
 #### Delete a project
 ```http
-DELETE /api/v1/projects/:project_id
+DELETE /api/v1/username/projects/:project_id
 ```
 ```json
 {

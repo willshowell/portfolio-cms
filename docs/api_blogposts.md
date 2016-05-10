@@ -1,7 +1,7 @@
 #### List blog posts
  
 ```http
-GET /api/v1/blogposts
+GET /api/v1/username/blogposts
 ```
 ```json
 [
@@ -21,7 +21,7 @@ GET /api/v1/blogposts
 	
 #### Get a full blog post
 ```http
-GET /api/v1/blogposts/570a6bb10fe400a43fbb572c
+GET /api/v1/username/blogposts/570a6bb10fe400a43fbb572c
 ```
 ```json
 {
@@ -35,7 +35,7 @@ GET /api/v1/blogposts/570a6bb10fe400a43fbb572c
 
 #### Create a new blog post
 ```http
-POST /api/v1/blogposts
+POST /api/v1/username/blogposts
 ```
 ```json
 HTTP/1.1 200 OK
@@ -47,7 +47,7 @@ HTTP/1.1 200 OK
 
 #### Edit a blog post
 ```http
-PUT /api/v1/blogposts/:blogpost_id
+PUT /api/v1/username/blogposts/:blogpost_id
 ```
 ```json
 {
@@ -58,7 +58,7 @@ PUT /api/v1/blogposts/:blogpost_id
 	
 #### Delete a blog post
 ```http
-DELETE /api/v1/blogposts/:blogpost_id
+DELETE /api/v1/username/blogposts/:blogpost_id
 ```
 ```json
 {

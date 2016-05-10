@@ -22,15 +22,16 @@ $ npm test
 ```
 
 ### Major TODO Tasks
-* [ ] Configure tests
+* [~] Configure tests
 * [x] Add users model
 * [x] Implement authentication
 * [ ] Create front-end management tool
 * [ ] Add image upload feature
-* [X] Extend functionality for markdown blog posts
- 
+* [X] Extend functionality for markdown blog posts 
 
 ### API Design
+
+#### [Authentication](./docs/api_authentication.md)
 
 #### [Projects](./docs/api_projects.md)
 
