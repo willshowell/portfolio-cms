@@ -20,11 +20,10 @@ var app = express();
 // Configure view engine to render with handlebars
 var hbs = exphbs.create({
 	defaultLayout: 'main',
-	partialsDir: [
-		'views/partials/'
-	]
+	layoutsDir: 'app/views/layouts',
+	partialsDir: 'app/views/partials/'
 });
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'app/views'));
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 
