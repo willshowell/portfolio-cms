@@ -19,13 +19,14 @@ var app = express();
 
 // Configure view engine to render with handlebars
 var hbs = exphbs.create({
+	extname: '.hbs',
 	defaultLayout: 'main',
 	layoutsDir: 'app/views/layouts',
 	partialsDir: 'app/views/partials/'
 });
 app.set('views', path.join(__dirname, 'app/views'));
-app.engine('handlebars', hbs.engine);
-app.set('view engine', 'handlebars');
+app.engine('.hbs', hbs.engine);
+app.set('view engine', '.hbs');
 
 // Connect to the CMS MongoDB
 // (switch to an alternate DB when testing)
